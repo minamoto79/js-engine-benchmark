@@ -27,6 +27,15 @@ class RQuickJsFFMBackend : JsBackend {
     private val jsCallSieve: MethodHandle
 
     init {
+        // Preflight: drive the Chicory-AOT'd cranelift.wasm through one
+        // round-trip codegen for the host triple, parallel to what the
+        // sibling wasm-engine-benchmark does in NativeFFMBackend.init.
+        // Verifies that the Cranelift-inside-the-JVM-via-wasm pipeline is
+        // alive before we touch the cg_clif-built rquickjs cdylib over FFM.
+        val pre = CraneliftPreflight.runForHost()
+        println("rquickjs-ffm: cranelift-on-wasm preflight ok " +
+            "(triple=${pre.triple}, ${pre.objectBytes} bytes)")
+
         val libPath = resolveLib()
         require(libPath.toFile().exists()) {
             "native lib not found at $libPath — build with " +

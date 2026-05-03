@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class JsBench {
 
     private JsBackend rquickjsFfm;
+    private JsBackend rquickjsChicory;
     private JsBackend graaljs;
     private JsBackend graaljsInterp;
     private JsBackend quickjs4j;
@@ -33,6 +34,7 @@ public class JsBench {
     @Setup(Level.Trial)
     public void setup() {
         rquickjsFfm = new RQuickJsFFMBackend();
+        rquickjsChicory = new RQuickJsChicoryBackend();
         graaljs = new GraalJsBackend();
         graaljsInterp = new GraalJsInterpreterBackend();
         quickjs4j = new QuickJs4JBackend();
@@ -42,12 +44,14 @@ public class JsBench {
     @TearDown(Level.Trial)
     public void tearDown() throws Exception {
         rquickjsFfm.close();
+        rquickjsChicory.close();
         graaljs.close();
         graaljsInterp.close();
         quickjs4j.close();
     }
 
     @Benchmark public void rquickjsFfm(Blackhole bh) { bh.consume(rquickjsFfm.sieve(n)); }
+    @Benchmark public void rquickjsChicory(Blackhole bh) { bh.consume(rquickjsChicory.sieve(n)); }
     @Benchmark public void graaljs(Blackhole bh) { bh.consume(graaljs.sieve(n)); }
     @Benchmark public void graaljsInterp(Blackhole bh) { bh.consume(graaljsInterp.sieve(n)); }
     @Benchmark public void quickjs4j(Blackhole bh) { bh.consume(quickjs4j.sieve(n)); }

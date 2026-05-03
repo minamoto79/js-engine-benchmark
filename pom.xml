@@ -149,24 +149,13 @@
                         <goals><goal>run</goal></goals>
                         <configuration>
                             <target>
-                                <condition property="wasi.sdk.unset">
-                                    <not><isset property="env.WASI_SDK"/></not>
-                                </condition>
-                                <echo unless="wasi.sdk.unset" message="Rebuilding rquickjs.wasm via WASI_SDK=${env.WASI_SDK}"/>
-                                <exec unless="wasi.sdk.unset" executable="cargo" dir="${project.basedir}/rquickjs-bench" failonerror="true">
-                                    <env key="CC_wasm32_wasip1"      value="${env.WASI_SDK}/bin/clang"/>
-                                    <env key="AR_wasm32_wasip1"      value="${env.WASI_SDK}/bin/llvm-ar"/>
-                                    <env key="CFLAGS_wasm32_wasip1"  value="--sysroot=${env.WASI_SDK}/share/wasi-sysroot"/>
-                                    <env key="CARGO_PROFILE_RELEASE_CODEGEN_BACKEND" value="llvm"/>
-                                    <arg value="+nightly"/>
-                                    <arg value="build"/>
-                                    <arg value="--release"/>
-                                    <arg value="--target"/>
-                                    <arg value="wasm32-wasip1"/>
+                                <!-- The maven-antrun-plugin's bundled Ant doesn't honour the
+                                     if/unless attributes on <exec>/<copy>/<echo>, so the
+                                     "skip when WASI_SDK is unset" branch is done in shell. -->
+                                <exec executable="sh" dir="${project.basedir}" failonerror="true">
+                                    <arg value="-c"/>
+                                    <arg value="if [ -z &quot;$WASI_SDK&quot; ]; then echo 'WASI_SDK unset, skipping rquickjs.wasm rebuild'; exit 0; fi; echo &quot;Rebuilding rquickjs.wasm via WASI_SDK=$WASI_SDK&quot;; cd rquickjs-bench &amp;&amp; CC_wasm32_wasip1=$WASI_SDK/bin/clang AR_wasm32_wasip1=$WASI_SDK/bin/llvm-ar CFLAGS_wasm32_wasip1=&quot;--sysroot=$WASI_SDK/share/wasi-sysroot&quot; CARGO_PROFILE_RELEASE_CODEGEN_BACKEND=llvm cargo +nightly build --release --target wasm32-wasip1 &amp;&amp; cp target/wasm32-wasip1/release/rquickjs_bench.wasm ../src/main/resources/wasm/rquickjs.wasm"/>
                                 </exec>
-                                <copy unless="wasi.sdk.unset"
-                                      file="${project.basedir}/rquickjs-bench/target/wasm32-wasip1/release/rquickjs_bench.wasm"
-                                      tofile="${project.basedir}/src/main/resources/wasm/rquickjs.wasm"/>
                             </target>
                         </configuration>
                     </execution>

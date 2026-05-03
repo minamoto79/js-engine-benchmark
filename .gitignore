@@ -1,0 +1,14 @@
+target/
+.kotlin
+
+### Rust ###
+rquickjs-bench/target/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Mac OS ###
+.DS_Store

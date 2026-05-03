@@ -1,0 +1,28 @@
+[package]
+name = "rquickjs-bench"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# rquickjs is the maintained Rust binding for QuickJS (statically links the
+# QuickJS C source via cc-rs at build time).
+rquickjs = { version = "0.9", features = ["loader"] }
+
+[profile.release]
+opt-level = 3
+lto = false
+strip = true
+codegen-units = 1
+# cg_clif (rustc_codegen_cranelift) doesn't emit LLVM bitcode, so LTO has to
+# stay off. Setting lto=true silently degrades to fat-LTO across LLVM-compiled
+# rlibs while leaving local cg_clif objects out, which breaks the link.
+
+# Note: `cargo +nightly rustc -- -Zcodegen-backend=cranelift` activates the
+# Cranelift Rust backend (cg_clif) for the Rust compilation. The QuickJS C
+# code is still built by the system C compiler (clang/gcc) — cg_clif only
+# affects rustc-emitted code. So this benchmark measures the Rust↔C glue
+# layer through cg_clif, not QuickJS's interpreter loop itself.
